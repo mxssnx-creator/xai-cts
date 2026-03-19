@@ -465,9 +465,11 @@ const migrations: Migration[] = [
     up: async (client: any) => {
       await client.set("_schema_version", "15")
       
-      // The 4 base exchanges that should be marked as INSERTED and ENABLED
-      // Using bybit, bingx, pionex, orangex as specified
+      // The 4 base exchanges that should be marked as INSERTED and ENABLED in Settings
+      // Only bybit-x03 and bingx-x01 are added to Main Connections (active panel) by default
+      // Pionex and Orangex must be manually added by the user
       const baseExchangeIds = ["bybit-x03", "bingx-x01", "pionex-x01", "orangex-x01"]
+      const defaultMainConnectionIds = ["bybit-x03", "bingx-x01"] // Only these are added to active panel by default
       
       const connections = await client.smembers("connections")
       let updatedBase = 0
@@ -479,11 +481,13 @@ const migrations: Migration[] = [
         
         if (baseExchangeIds.includes(connId)) {
           // Mark as INSERTED and ENABLED in Settings by default (base connection)
-          // Dashboard/Main enable toggle stays OFF by default until user enables it.
+          // Only bybit and bingx are added to Active panel by default
+          // Pionex and Orangex must be manually added by the user
+          const shouldBeMainConnection = defaultMainConnectionIds.includes(connId)
           await client.hset(`connection:${connId}`, {
             is_inserted: "1",
             is_enabled: "1",              // ENABLED by default
-            is_active_inserted: "1",      // Added to Active panel
+            is_active_inserted: shouldBeMainConnection ? "1" : "0", // Only bybit/bingx in active panel by default
             is_enabled_dashboard: "0",    // Dashboard toggle OFF by default
             is_active: "0",
             is_predefined: "1",
@@ -491,7 +495,7 @@ const migrations: Migration[] = [
             updated_at: new Date().toISOString(),
           })
           updatedBase++
-          console.log(`[v0] Migration 015: ${connId} -> inserted=1, enabled=1, active_inserted=1, dashboard_enabled=0 (base connection)`)
+          console.log(`[v0] Migration 015: ${connId} -> inserted=1, enabled=1, active_inserted=${shouldBeMainConnection ? "1" : "0"}, dashboard_enabled=0 (${shouldBeMainConnection ? "main connection" : "base connection"})`)
         } else {
           // Non-base predefined connections: just informational templates
           // NOT inserted, NOT enabled - they are templates only
@@ -523,6 +527,9 @@ const migrations: Migration[] = [
       // Base connections: bybit, bingx, pionex, orangex - should be INSERTED and ENABLED
       const baseTemplateIds = ["bybit-x03", "bingx-x01", "pionex-x01", "orangex-x01"]
       
+      // Only bybit and bingx are added to main connections by default
+      const defaultMainConnectionIds = ["bybit-x03", "bingx-x01"]
+
       const connections = await client.smembers("connections") || []
       let updatedTemplates = 0
       let updatedUserConnections = 0
@@ -538,11 +545,13 @@ const migrations: Migration[] = [
         
         if (isBaseTemplate) {
           // Base connections: inserted and enabled in Settings by default
-          // Main (dashboard) enable toggle must remain OFF by default.
+          // Only bybit and bingx are added to Active panel by default
+          // Pionex and Orangex must be manually added by the user
+          const shouldBeMainConnection = defaultMainConnectionIds.includes(connId)
           const updateData: Record<string, string> = {
             is_inserted: "1",        // INSERTED
             is_enabled: "1",         // ENABLED
-            is_active_inserted: "1", // In active panel
+            is_active_inserted: shouldBeMainConnection ? "1" : "0", // Only bybit/bingx in active panel by default
             is_enabled_dashboard: "0",
             is_active: "0",
             connection_method: "library", // Use native SDK by default
@@ -557,7 +566,7 @@ const migrations: Migration[] = [
           
           await client.hset(`connection:${connId}`, updateData)
           updatedTemplates++
-          console.log(`[v0] Migration 016: ✓ ${connId} -> inserted=1, enabled=1, dashboard_enabled=0 (base connection)`)
+          console.log(`[v0] Migration 016: ✓ ${connId} -> inserted=1, enabled=1, active_inserted=${shouldBeMainConnection ? "1" : "0"}, dashboard_enabled=0 (${shouldBeMainConnection ? "main connection" : "base connection"})`)
         } else if (!isPredefined) {
           // User-created connections: reset dashboard state if not properly set
           if (!connData.is_active_inserted || !connData.is_enabled_dashboard) {

@@ -6,6 +6,7 @@ import { useExchange } from "@/lib/exchange-context"
 import { useConnectionState } from "@/lib/connection-state"
 import { SystemOverview } from "./system-overview"
 import { GlobalTradeEngineControls } from "./global-trade-engine-controls"
+import { GlobalStatusBanner } from "./global-status-banner"
 import { DashboardActiveConnectionsManager } from "./dashboard-active-connections-manager"
 import { IntervalsStrategiesOverview } from "./intervals-strategies-overview"
 import { StatisticsOverviewV2 } from "./statistics-overview-v2"
@@ -155,6 +156,9 @@ export function Dashboard() {
           Refresh
         </Button>
       </div>
+
+      {/* Global Status Banner - Shows why engine isn't running */}
+      <GlobalStatusBanner />
 
       {/* Smart Overview - Comprehensive system status */}
       <ErrorBoundary name="System Overview">

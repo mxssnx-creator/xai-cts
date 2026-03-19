@@ -11,12 +11,17 @@ type BaseSeedConfig = {
   connectionLibrary: string
 }
 
+// Only bybit and bingx are added to main connections (active panel) by default
+// Pionex and Orangex must be manually added by the user
 const CANONICAL_BASE_CONNECTIONS: BaseSeedConfig[] = [
   { id: "bybit-x03", exchange: "bybit", name: "Bybit X03", apiType: "unified", contractType: "linear", connectionMethod: "library", connectionLibrary: "native" },
   { id: "bingx-x01", exchange: "bingx", name: "BingX X01", apiType: "perpetual_futures", contractType: "usdt-perpetual", connectionMethod: "library", connectionLibrary: "native" },
   { id: "pionex-x01", exchange: "pionex", name: "Pionex X01", apiType: "perpetual_futures", contractType: "usdt-perpetual", connectionMethod: "library", connectionLibrary: "native" },
   { id: "orangex-x01", exchange: "orangex", name: "OrangeX X01", apiType: "perpetual_futures", contractType: "usdt-perpetual", connectionMethod: "library", connectionLibrary: "native" },
 ]
+
+// Only these exchanges are added to main connections (active panel) by default
+const DEFAULT_MAIN_CONNECTIONS = ["bybit-x03", "bingx-x01"]
 
 const LEGACY_CONNECTION_IDS = [
   "bybit-base",
@@ -64,6 +69,10 @@ export async function ensureDefaultExchangesExist() {
         const { apiKey, apiSecret } = getBaseConnectionCredentials(cfg.id)
         const hasConfiguredCreds = apiKey.length > 0 && apiSecret.length > 0
 
+      // Only add to main connections (active panel) if it's in DEFAULT_MAIN_CONNECTIONS
+      // This ensures pionex and orangex are NOT auto-added to main connections
+      const shouldBeActiveInserted = DEFAULT_MAIN_CONNECTIONS.includes(cfg.id)
+      
       const normalizedBase = {
         id: cfg.id,
         name: existing?.name || cfg.name,
@@ -77,7 +86,8 @@ export async function ensureDefaultExchangesExist() {
         is_testnet: existing?.is_testnet ?? false,
         is_predefined: existing?.is_predefined ?? true,
         is_inserted: existing?.is_inserted ?? "1",
-        is_active_inserted: existing?.is_active_inserted ?? "1",
+        // Only add to active panel if explicitly set before, or if it's a default main connection
+        is_active_inserted: existing?.is_active_inserted ?? (shouldBeActiveInserted ? "1" : "0"),
         is_enabled: existing?.is_enabled ?? "1",
         is_enabled_dashboard: existing?.is_enabled_dashboard ?? "0",
         is_active: existing?.is_active ?? "0",
