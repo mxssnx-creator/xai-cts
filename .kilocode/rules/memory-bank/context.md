@@ -92,6 +92,8 @@ The workspace now contains the restored CTS v3 application from the upstream `v0
 - [x] Repaired dashboard monitoring/info/state stability: normalized Smart Overview and Monitoring payload handling, fixed symbols stats contract mismatch (`openPositions` vs `livePositions`), added DB size estimation in monitoring API, and improved Symbols Overview responsive layout for mobile/tablet density
 - [x] Verified all quality gates pass: `bun typecheck`, `bun lint`, and `bun run build` all complete successfully
 - [x] Fixed system test script: updated outdated tests for better-sqlite3 (now uses InlineLocalRedis) and layout.tsx initialization (now checks instrumentation.ts)
+- [x] Restricted default main connections: only bybit-x03 and bingx-x01 are added to main connections (active panel) by default; pionex and orangex must be manually added by user
+- [x] Added GlobalStatusBanner to dashboard showing why trade engine cannot start (missing credentials, no active connections, etc.) and global coordinator status when paused/stopped
 
 ## Current Structure
 
@@ -117,6 +119,7 @@ Current focus is runtime correctness and operational workflow completeness for t
 
 | Date | Changes |
 |------|---------|
+| 2026-03-19 | Restricted default main connections: only bybit-x03 and bingx-x01 are added to main connections by default; added GlobalStatusBanner to dashboard showing why engine cannot start and global coordinator status |
 | 2026-03-19 | Verified all quality gates pass and fixed system tests: updated test-complete-system.js to check for InlineLocalRedis (instead of better-sqlite3) and instrumentation.ts (instead of layout.tsx for initialization); all 29 tests now pass |
 | 2026-03-19 | Fixed workflow, progression, and stats bugs: workflow logger storage/retrieval mismatch (set vs zrevrange), progression limits risk calculation (100x too small), and verify-engine wrong field reference (prehistoric_cycles) |
 | 2026-03-19 | Fixed dashboard monitoring/info/state regressions and Symbols Overview responsiveness: added defensive normalization in `SystemOverview`/`SystemMonitoringPanel`, aligned `/api/exchange-positions/symbols-stats` contract with `livePositions`, added lightweight Redis DB size estimation in `/api/system/monitoring`, and changed symbol cards to denser responsive multi-column layout on mobile/tablet/desktop |
