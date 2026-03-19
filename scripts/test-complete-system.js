@@ -160,9 +160,12 @@ test('react package installed', () => {
   }
 });
 
-test('better-sqlite3 package installed', () => {
-  if (!fs.existsSync(path.join(process.cwd(), 'node_modules/better-sqlite3'))) {
-    throw new Error('better-sqlite3 not installed');
+test('InlineLocalRedis implementation exists', () => {
+  const redisPath = path.join(process.cwd(), 'lib/redis-db.ts');
+  const content = fs.readFileSync(redisPath, 'utf-8');
+  
+  if (!content.includes('InlineLocalRedis')) {
+    throw new Error('InlineLocalRedis not found in redis-db.ts');
   }
 });
 
@@ -243,10 +246,12 @@ test('Migration runner has use server directive', () => {
   }
 });
 
-test('Layout calls initializeApplication', () => {
-  const content = fs.readFileSync(path.join(process.cwd(), 'app/layout.tsx'), 'utf-8');
-  if (!content.includes('initializeApplication')) {
-    throw new Error('layout.tsx does not call initializeApplication');
+test('instrumentation.ts handles startup initialization', () => {
+  const instrumentationPath = path.join(process.cwd(), 'instrumentation.ts');
+  const content = fs.readFileSync(instrumentationPath, 'utf-8');
+  
+  if (!content.includes('runPreStartup')) {
+    throw new Error('instrumentation.ts does not call runPreStartup');
   }
 });
 
